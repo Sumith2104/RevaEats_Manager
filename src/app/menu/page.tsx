@@ -16,18 +16,18 @@ export default function MenuPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.from('menu_items').select('*').order('name');
-      if (error) {
-        console.error('Error fetching menu items:', JSON.stringify(error, null, 2));
-      } else if (data) {
-        setMenuItems(data);
-      }
-      setLoading(false);
-    };
+  const fetchMenuItems = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('menu_items').select('*').order('name');
+    if (error) {
+      console.error('Error fetching menu items:', JSON.stringify(error, null, 2));
+    } else if (data) {
+      setMenuItems(data);
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchMenuItems();
 
     const channel = supabase
@@ -71,7 +71,15 @@ export default function MenuPage() {
 
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
     const { error } = await supabase.from('menu_items').update({ is_available: isAvailable }).eq('id', itemId);
-    if (error) console.error("Error toggling availability:", JSON.stringify(error, null, 2));
+    if (error) {
+        console.error("Error toggling availability:", JSON.stringify(error, null, 2));
+    } else {
+        setMenuItems(currentItems =>
+            currentItems.map(item =>
+                item.id === itemId ? { ...item, is_available: isAvailable } : item
+            )
+        );
+    }
   };
   
   const handleEdit = (item: MenuItem) => {
