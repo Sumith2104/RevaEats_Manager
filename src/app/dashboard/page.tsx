@@ -4,16 +4,13 @@ import { DollarSign, ShoppingCart, Utensils, CheckCircle } from 'lucide-react';
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { PopularItemsChart } from '@/components/dashboard/popular-items-chart';
 import { AiRecommendations } from '@/components/dashboard/ai-recommendations';
-import { supabase as sb } from '@/lib/supabase/client';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { subDays, startOfDay, endOfDay, formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-// Supabase client instance is imported from a client component module,
-// so we need to access it from the module's `supabase` property.
-const supabase = (sb as any).supabase || sb;
-
 async function getDashboardStats() {
+    const supabase = createSupabaseServerClient();
     const today = new Date();
     const lastMonth = subDays(today, 30);
     const yesterday = subDays(today, 1);
@@ -33,8 +30,8 @@ async function getDashboardStats() {
 
     if (lastMonthRevenueError) console.error('Error fetching last month revenue:', JSON.stringify(lastMonthRevenueError, null, 2));
 
-    const totalRevenue = totalRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
-    const lastMonthRevenue = lastMonthRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
+    const totalRevenue = totalRevenueData?.reduce((acc, order) => acc.total + order.total, 0) ?? 0;
+    const lastMonthRevenue = lastMonthRevenueData?.reduce((acc, order) => acc.total + order.total, 0) ?? 0;
 
     const revenueChange = lastMonthRevenue > 0 ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
 
