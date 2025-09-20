@@ -60,19 +60,10 @@ export default function OrdersPage() {
 
     fetchOrders();
 
-    const channel = supabase
-      .channel('realtime orders')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          fetchOrders();
-        }
-      )
-      .subscribe();
+    const intervalId = setInterval(fetchOrders, 1000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -93,7 +84,7 @@ export default function OrdersPage() {
     }
   };
   
-  const orderStatuses: Order['status'][] = ['New', 'Preparing', 'Ready for Pickup', 'Completed'];
+  const orderStatuses: Order['status'][] = ['New', 'Preparing', 'Ready for Pickup', 'Completed', 'Cancelled'];
 
   const renderOrderGrid = (orderList: Order[]) => {
     if (loading) {
