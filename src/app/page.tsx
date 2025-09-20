@@ -18,8 +18,6 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      // Note: This is a placeholder for fetching data from Supabase.
-      // You will need to implement the actual data fetching logic.
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -40,7 +38,7 @@ export default function OrdersPage() {
         .order('order_time', { ascending: false });
 
       if (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching orders:', JSON.stringify(error, null, 2));
       } else if (data) {
         const fetchedOrders: Order[] = data.map((order: any) => ({
           id: order.id,

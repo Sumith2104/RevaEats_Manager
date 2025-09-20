@@ -21,7 +21,7 @@ export default function MenuPage() {
       setLoading(true);
       const { data, error } = await supabase.from('menu_items').select('*').order('name');
       if (error) {
-        console.error('Error fetching menu items:', error);
+        console.error('Error fetching menu items:', JSON.stringify(error, null, 2));
       } else if (data) {
         setMenuItems(data);
       }
