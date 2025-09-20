@@ -5,7 +5,7 @@ import { SalesChart } from '@/components/dashboard/sales-chart';
 import { PopularItemsChart } from '@/components/dashboard/popular-items-chart';
 import { AiRecommendations } from '@/components/dashboard/ai-recommendations';
 import { supabase } from '@/lib/supabase/client';
-import { subDays, startOfDay, endOfDay, isToday } from 'date-fns';
+import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 async function getDashboardStats() {
     const today = new Date();
