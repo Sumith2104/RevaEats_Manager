@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -91,6 +91,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="flex flex-col">
+                            <SheetHeader className="sr-only">
+                                <SheetTitle>Navigation Menu</SheetTitle>
+                            </SheetHeader>
                             <nav className="grid gap-2 text-lg font-medium">
                                 <Link
                                     href="#"
