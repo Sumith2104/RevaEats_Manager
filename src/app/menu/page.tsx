@@ -53,11 +53,11 @@ export default function MenuPage() {
     if (editingItem) {
       // Update
       const { error } = await supabase.from('menu_items').update(itemData).eq('id', id);
-      if (error) console.error("Error updating item:", error);
+      if (error) console.error("Error updating item:", JSON.stringify(error, null, 2));
     } else {
       // Create
       const { error } = await supabase.from('menu_items').insert(itemData);
-      if (error) console.error("Error creating item:", error);
+      if (error) console.error("Error creating item:", JSON.stringify(error, null, 2));
     }
 
     setEditingItem(null);
@@ -66,12 +66,12 @@ export default function MenuPage() {
 
   const handleDeleteItem = async (itemId: string) => {
     const { error } = await supabase.from('menu_items').delete().eq('id', itemId);
-    if (error) console.error("Error deleting item:", error);
+    if (error) console.error("Error deleting item:", JSON.stringify(error, null, 2));
   };
 
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
     const { error } = await supabase.from('menu_items').update({ is_available: isAvailable }).eq('id', itemId);
-    if (error) console.error("Error toggling availability:", error);
+    if (error) console.error("Error toggling availability:", JSON.stringify(error, null, 2));
   };
   
   const handleEdit = (item: MenuItem) => {
