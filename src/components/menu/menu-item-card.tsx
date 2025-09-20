@@ -85,7 +85,7 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }: M
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <CardTitle className="font-headline text-lg mb-1">{item.name}</CardTitle>
-        <p className="text-lg font-semibold text-primary">${item.price.toFixed(2)}</p>
+        <p className="text-lg font-semibold text-primary">₹{item.price.toFixed(2)}</p>
         <CardDescription className="mt-2 text-sm h-10 overflow-hidden text-ellipsis">
             {item.description}
         </CardDescription>
