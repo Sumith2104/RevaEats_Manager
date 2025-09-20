@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "burger",
+      "description": "A classic beef burger with all the fixings.",
+      "imageUrl": "https://picsum.photos/seed/burger/600/400",
+      "imageHint": "beef burger"
+    },
+    {
+      "id": "pizza",
+      "description": "12-inch pizza with mozzarella and tomato sauce.",
+      "imageUrl": "https://picsum.photos/seed/pizza/600/400",
+      "imageHint": "cheese pizza"
+    },
+    {
+      "id": "salad",
+      "description": "Fresh greens, tomatoes, cucumbers, and a light vinaigrette.",
+      "imageUrl": "https://picsum.photos/seed/salad/600/400",
+      "imageHint": "garden salad"
+    },
+    {
+      "id": "tenders",
+      "description": "Crispy chicken tenders with your choice of sauce.",
+      "imageUrl": "https://picsum.photos/seed/tenders/600/400",
+      "imageHint": "chicken tenders"
+    },
+    {
+      "id": "drink",
+      "description": "Refreshing soda from our fountain.",
+      "imageUrl": "https://picsum.photos/seed/drink/600/400",
+      "imageHint": "soda cup"
+    },
+    {
+      "id": "spicy_chicken",
+      "description": "A fiery chicken sandwich for the brave.",
+      "imageUrl": "https://picsum.photos/seed/spicy_chicken/600/400",
+      "imageHint": "chicken sandwich"
+    },
+    {
+      "id": "login_graphic",
+      "description": "A stylized image of various food items.",
+      "imageUrl": "https://picsum.photos/seed/login_graphic/800/1200",
+      "imageHint": "food collage"
+    }
+  ]
 }
