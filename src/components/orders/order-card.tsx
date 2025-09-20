@@ -1,13 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Order } from '@/lib/types';
-import { Clock, Bot } from 'lucide-react';
-import { OrderNotificationDialog } from './order-notification-dialog';
+import { Clock } from 'lucide-react';
 
 interface OrderCardProps {
   order: Order;
@@ -24,7 +22,6 @@ const statusColors: { [key in Order['status']]: string } = {
 
 
 export function OrderCard({ order, onStatusChange }: OrderCardProps) {
-  const [isNotificationDialogOpen, setNotificationDialogOpen] = useState(false);
   const [timeAgo, setTimeAgo] = useState(0);
 
   useState(() => {
@@ -82,18 +79,9 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
                 <SelectItem value="Cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="w-full" onClick={() => setNotificationDialogOpen(true)}>
-              <Bot className="mr-2 h-4 w-4" />
-              Notify
-            </Button>
           </div>
         </CardFooter>
       </Card>
-      <OrderNotificationDialog
-        isOpen={isNotificationDialogOpen}
-        setOpen={setNotificationDialogOpen}
-        order={order}
-      />
     </>
   );
 }

@@ -1,11 +1,13 @@
 import { AppLayout } from '@/components/layout/app-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DollarSign, ShoppingCart, Utensils } from 'lucide-react';
+import { DollarSign, ShoppingCart, Utensils, CheckCircle } from 'lucide-react';
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { PopularItemsChart } from '@/components/dashboard/popular-items-chart';
 import { AiRecommendations } from '@/components/dashboard/ai-recommendations';
 import { supabase } from '@/lib/supabase/client';
-import { subDays, startOfDay, endOfDay } from 'date-fns';
+import { subDays, startOfDay, endOfDay, formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 async function getDashboardStats() {
     const today = new Date();
@@ -69,19 +71,30 @@ async function getDashboardStats() {
     }, {} as Record<string, number>) ?? {};
 
     const popularItemName = Object.keys(itemCounts).reduce((a, b) => itemCounts[a] > itemCounts[b] ? a : b, 'N/A');
+    
+    const { data: recentCompletedOrders, error: recentOrdersError } = await supabase
+        .from('orders')
+        .select('id, customer_name, total, order_time')
+        .eq('status', 'Completed')
+        .order('order_time', { ascending: false })
+        .limit(5);
+
+    if (recentOrdersError) console.error('Error fetching recent orders:', JSON.stringify(recentOrdersError, null, 2));
+
 
     return {
         totalRevenue,
         revenueChange,
         todaysOrdersCount,
         orderChange,
-        popularItemName
+        popularItemName,
+        recentCompletedOrders: recentCompletedOrders ?? []
     };
 }
 
 
 export default async function DashboardPage() {
-  const { totalRevenue, revenueChange, todaysOrdersCount, orderChange, popularItemName } = await getDashboardStats();
+  const { totalRevenue, revenueChange, todaysOrdersCount, orderChange, popularItemName, recentCompletedOrders } = await getDashboardStats();
   
   return (
     <AppLayout>
@@ -120,8 +133,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Sales Overview</CardTitle>
             <CardDescription>Daily and weekly sales performance.</CardDescription>
@@ -130,7 +143,7 @@ export default async function DashboardPage() {
             <SalesChart />
           </CardContent>
         </Card>
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-span-1">
             <Card>
                 <CardHeader>
                     <CardTitle>Popular Items</CardTitle>
@@ -140,6 +153,39 @@ export default async function DashboardPage() {
                     <PopularItemsChart />
                 </CardContent>
             </Card>
+        </div>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>A log of recently completed orders.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {recentCompletedOrders.length > 0 ? (
+                    <ul className="space-y-4">
+                        {recentCompletedOrders.map((order, index) => (
+                            <li key={order.id}>
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-green-100 dark:bg-green-900/50 p-2 rounded-full">
+                                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-medium">{order.customer_name}'s order completed</p>
+                                        <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(order.order_time), { addSuffix: true })}</p>
+                                    </div>
+                                    <Badge variant="secondary">₹{order.total.toFixed(2)}</Badge>
+                                </div>
+                                {index < recentCompletedOrders.length - 1 && <Separator className="my-4" />}
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                        No completed orders yet.
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+        <div className="space-y-4 lg:col-span-1">
             <AiRecommendations />
         </div>
       </div>

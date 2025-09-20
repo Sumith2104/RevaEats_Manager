@@ -11,10 +11,12 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -35,6 +37,7 @@ export default function OrdersPage() {
             )
           )
         `)
+        .not('status', 'eq', 'Completed')
         .order('order_time', { ascending: false });
 
       if (error) {
@@ -76,15 +79,24 @@ export default function OrdersPage() {
     if (error) {
       console.error('Error updating order status:', error);
     } else {
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
+        if (newStatus === 'Completed') {
+            toast({
+              title: "Order Completed!",
+              description: `Order #${orderId.split('-')[1]} has been marked as completed.`,
+            });
+            // Remove the order from the local state
+            setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
+        } else {
+            setOrders(prevOrders =>
+                prevOrders.map(order =>
+                order.id === orderId ? { ...order, status: newStatus } : order
+                )
+            );
+        }
     }
   };
   
-  const orderStatuses: Order['status'][] = ['New', 'Preparing', 'Ready for Pickup', 'Completed', 'Cancelled'];
+  const orderStatuses: Order['status'][] = ['New', 'Preparing', 'Ready for Pickup', 'Cancelled'];
 
   const renderOrderGrid = (orderList: Order[]) => {
     if (loading) {
