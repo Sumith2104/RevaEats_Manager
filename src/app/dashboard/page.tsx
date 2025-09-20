@@ -30,8 +30,8 @@ async function getDashboardStats() {
 
     if (lastMonthRevenueError) console.error('Error fetching last month revenue:', JSON.stringify(lastMonthRevenueError, null, 2));
 
-    const totalRevenue = totalRevenueData?.reduce((acc, order) => acc.total + order.total, 0) ?? 0;
-    const lastMonthRevenue = lastMonthRevenueData?.reduce((acc, order) => acc.total + order.total, 0) ?? 0;
+    const totalRevenue = totalRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
+    const lastMonthRevenue = lastMonthRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
 
     const revenueChange = lastMonthRevenue > 0 ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
 
