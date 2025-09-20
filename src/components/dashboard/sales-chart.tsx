@@ -1,10 +1,89 @@
 "use client"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, LineChart } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { dailySales, weeklySales } from '@/lib/data';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import { startOfWeek, startOfDay, subDays, format } from 'date-fns';
+import { Skeleton } from '../ui/skeleton';
+
+interface SalesData {
+  date: string;
+  sales: number;
+}
 
 export function SalesChart() {
+  const [dailySales, setDailySales] = useState<SalesData[]>([]);
+  const [weeklySales, setWeeklySales] = useState<SalesData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      setLoading(true);
+      const today = new Date();
+      
+      // Daily Sales (last 7 days)
+      const last7Days = Array.from({ length: 7 }, (_, i) => subDays(today, i)).reverse();
+      const dailyPromises = last7Days.map(day => 
+        supabase
+          .from('orders')
+          .select('total')
+          .eq('status', 'Completed')
+          .gte('order_time', startOfDay(day).toISOString())
+          .lte('order_time', endOfDay(day).toISOString())
+      );
+      
+      const dailyResults = await Promise.all(dailyPromises);
+      const processedDailySales = dailyResults.map((result, i) => {
+        const total = result.data?.reduce((sum, order) => sum + order.total, 0) ?? 0;
+        return {
+          date: format(last7Days[i], 'eee'),
+          sales: total
+        };
+      });
+      setDailySales(processedDailySales);
+
+      // Weekly Sales (last 4 weeks)
+      const last4Weeks = Array.from({ length: 4 }, (_, i) => startOfWeek(subDays(today, i * 7)));
+      const weeklyPromises = last4Weeks.map(weekStart => {
+        const weekEnd = endOfDay(addDays(weekStart, 6));
+        return supabase
+          .from('orders')
+          .select('total')
+          .eq('status', 'Completed')
+          .gte('order_time', weekStart.toISOString())
+          .lte('order_time', weekEnd.toISOString());
+      });
+
+      const weeklyResults = await Promise.all(weeklyPromises);
+      const processedWeeklySales = weeklyResults.map((result, i) => {
+        const total = result.data?.reduce((sum, order) => sum + order.total, 0) ?? 0;
+        return {
+          date: `Week ${weeklyResults.length - i}`,
+          sales: total
+        };
+      }).reverse();
+      setWeeklySales(processedWeeklySales);
+
+      setLoading(false);
+    };
+    
+    // Helper functions to be used inside the effect
+    const endOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+    const addDays = (date: Date, days: number) => {
+        const result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    };
+
+
+    fetchSalesData();
+  }, []);
+
+  if (loading) {
+    return <Skeleton className="h-[350px] w-full" />;
+  }
+
   return (
     <Tabs defaultValue="daily" className="w-full">
       <TabsList className="grid w-full grid-cols-2">

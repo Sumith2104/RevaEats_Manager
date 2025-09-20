@@ -4,8 +4,85 @@ import { DollarSign, ShoppingCart, Utensils } from 'lucide-react';
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { PopularItemsChart } from '@/components/dashboard/popular-items-chart';
 import { AiRecommendations } from '@/components/dashboard/ai-recommendations';
+import { supabase } from '@/lib/supabase/client';
+import { subDays, startOfDay, endOfDay, isToday } from 'date-fns';
 
-export default function DashboardPage() {
+async function getDashboardStats() {
+    const today = new Date();
+    const lastMonth = subDays(today, 30);
+    const yesterday = subDays(today, 1);
+
+    const { data: totalRevenueData, error: totalRevenueError } = await supabase
+        .from('orders')
+        .select('total')
+        .eq('status', 'Completed');
+
+    if (totalRevenueError) console.error('Error fetching total revenue:', JSON.stringify(totalRevenueError, null, 2));
+
+    const { data: lastMonthRevenueData, error: lastMonthRevenueError } = await supabase
+        .from('orders')
+        .select('total')
+        .eq('status', 'Completed')
+        .gte('order_time', lastMonth.toISOString());
+
+    if (lastMonthRevenueError) console.error('Error fetching last month revenue:', JSON.stringify(lastMonthRevenueError, null, 2));
+
+    const totalRevenue = totalRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
+    const lastMonthRevenue = lastMonthRevenueData?.reduce((acc, order) => acc + order.total, 0) ?? 0;
+
+    const revenueChange = lastMonthRevenue > 0 ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
+
+    const { data: todaysOrdersData, error: todaysOrdersError } = await supabase
+        .from('orders')
+        .select('id')
+        .gte('order_time', startOfDay(today).toISOString())
+        .lte('order_time', endOfDay(today).toISOString());
+
+    if (todaysOrdersError) console.error('Error fetching today\'s orders:', JSON.stringify(todaysOrdersError, null, 2));
+
+    const { data: yesterdaysOrdersData, error: yesterdaysOrdersError } = await supabase
+        .from('orders')
+        .select('id')
+        .gte('order_time', startOfDay(yesterday).toISOString())
+        .lte('order_time', endOfDay(yesterday).toISOString());
+    
+    if (yesterdaysOrdersError) console.error('Error fetching yesterday\'s orders:', JSON.stringify(yesterdaysOrdersError, null, 2));
+
+    const todaysOrdersCount = todaysOrdersData?.length ?? 0;
+    const yesterdaysOrdersCount = yesterdaysOrdersData?.length ?? 0;
+
+    const orderChange = todaysOrdersCount - yesterdaysOrdersCount;
+
+    const { data: popularItemData, error: popularItemError } = await supabase
+        .from('order_items')
+        .select('menu_items ( name ), quantity')
+        .limit(100);
+
+    if (popularItemError) console.error('Error fetching popular item data:', JSON.stringify(popularItemError, null, 2));
+
+    const itemCounts = popularItemData?.reduce((acc, item) => {
+        const itemName = item.menu_items?.name;
+        if (itemName) {
+            acc[itemName] = (acc[itemName] || 0) + item.quantity;
+        }
+        return acc;
+    }, {} as Record<string, number>) ?? {};
+
+    const popularItemName = Object.keys(itemCounts).reduce((a, b) => itemCounts[a] > itemCounts[b] ? a : b, 'N/A');
+
+    return {
+        totalRevenue,
+        revenueChange,
+        todaysOrdersCount,
+        orderChange,
+        popularItemName
+    };
+}
+
+
+export default async function DashboardPage() {
+  const { totalRevenue, revenueChange, todaysOrdersCount, orderChange, popularItemName } = await getDashboardStats();
+  
   return (
     <AppLayout>
       <div className="flex items-center">
@@ -18,8 +95,8 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹45,231.89</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">₹{totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">{revenueChange.toFixed(1)}% from last month</p>
           </CardContent>
         </Card>
         <Card>
@@ -28,8 +105,8 @@ export default function DashboardPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+125</div>
-            <p className="text-xs text-muted-foreground">+10 since yesterday</p>
+            <div className="text-2xl font-bold">+{todaysOrdersCount}</div>
+            <p className="text-xs text-muted-foreground">{orderChange >= 0 ? '+' : ''}{orderChange} since yesterday</p>
           </CardContent>
         </Card>
         <Card>
@@ -38,7 +115,7 @@ export default function DashboardPage() {
             <Utensils className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Campus Burger</div>
+            <div className="text-2xl font-bold">{popularItemName}</div>
             <p className="text-xs text-muted-foreground">Most sold item this week</p>
           </CardContent>
         </Card>
