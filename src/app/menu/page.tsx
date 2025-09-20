@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/app-layout';
 import { MenuItemCard } from '@/components/menu/menu-item-card';
 import { MenuItemForm } from '@/components/menu/menu-item-form';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabase/client';
 import type { MenuItem } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
@@ -96,6 +96,12 @@ export default function MenuPage() {
             </Button>
           </DialogTrigger>
           <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}</DialogTitle>
+              <DialogDescription>
+                Fill in the details below. Click save when you're done.
+              </DialogDescription>
+            </DialogHeader>
             <MenuItemForm
               item={editingItem}
               onSave={handleSaveItem}

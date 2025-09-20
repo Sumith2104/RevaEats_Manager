@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { DialogFooter } from '@/components/ui/dialog';
 import type { MenuItem } from '@/lib/types';
 
 const formSchema = z.object({
@@ -59,13 +59,7 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <DialogHeader>
-        <DialogTitle>{item ? 'Edit Menu Item' : 'Add New Menu Item'}</DialogTitle>
-        <DialogDescription>
-          Fill in the details below. Click save when you're done.
-        </DialogDescription>
-      </DialogHeader>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="name">Name</Label>
