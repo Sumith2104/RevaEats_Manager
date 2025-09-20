@@ -26,7 +26,7 @@ export default function OrdersPage() {
           total,
           status,
           order_time,
-          order_items (
+          order_items!inner (
             quantity,
             menu_items (
               id,
