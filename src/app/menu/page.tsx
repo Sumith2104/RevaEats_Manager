@@ -1,35 +1,82 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/app-layout';
 import { MenuItemCard } from '@/components/menu/menu-item-card';
 import { MenuItemForm } from '@/components/menu/menu-item-form';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
-import { menuItems as mockMenuItems } from '@/lib/data';
+import { supabase } from '@/lib/supabase/client';
 import type { MenuItem } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(mockMenuItems);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSaveItem = (item: MenuItem) => {
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      // This is a placeholder for fetching menu items from Supabase.
+      // You will need to implement your data fetching logic.
+      const { data, error } = await supabase.from('menu_items').select('*').order('name');
+      if (error) {
+        console.error('Error fetching menu items:', error);
+      } else if (data) {
+        const items = data.map((item: any) => ({
+            ...item,
+            imageUrl: item.image_url
+        }));
+        setMenuItems(items);
+      }
+      setLoading(false);
+    };
+
+    fetchMenuItems();
+
+    const channel = supabase
+      .channel('realtime menu')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'menu_items' },
+        (payload) => {
+          fetchMenuItems();
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleSaveItem = async (item: MenuItem) => {
+    const { id, name, description, price, category, imageUrl: image_url, isAvailable: is_available } = item;
+    const itemData = { name, description, price, category, image_url, is_available };
+
     if (editingItem) {
-      setMenuItems(prev => prev.map(i => i.id === item.id ? item : i));
+      // Update
+      const { error } = await supabase.from('menu_items').update(itemData).eq('id', id);
+      if (error) console.error("Error updating item:", error);
     } else {
-      setMenuItems(prev => [...prev, { ...item, id: String(Date.now()) }]);
+      // Create
+      const { error } = await supabase.from('menu_items').insert(itemData);
+      if (error) console.error("Error creating item:", error);
     }
+
     setEditingItem(null);
     setFormOpen(false);
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    setMenuItems(prev => prev.filter(i => i.id !== itemId));
+  const handleDeleteItem = async (itemId: string) => {
+    const { error } = await supabase.from('menu_items').delete().eq('id', itemId);
+    if (error) console.error("Error deleting item:", error);
   };
 
-  const handleToggleAvailability = (itemId: string, isAvailable: boolean) => {
-    setMenuItems(prev => prev.map(i => i.id === itemId ? { ...i, isAvailable } : i));
+  const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
+    const { error } = await supabase.from('menu_items').update({ is_available: isAvailable }).eq('id', itemId);
+    if (error) console.error("Error toggling availability:", error);
   };
   
   const handleEdit = (item: MenuItem) => {
@@ -62,17 +109,25 @@ export default function MenuPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid gap-4 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {menuItems.map(item => (
-          <MenuItemCard
-            key={item.id}
-            item={item}
-            onEdit={() => handleEdit(item)}
-            onDelete={() => handleDeleteItem(item.id)}
-            onToggleAvailability={(isAvailable) => handleToggleAvailability(item.id, isAvailable)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid gap-4 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-96 w-full" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {menuItems.map(item => (
+            <MenuItemCard
+              key={item.id}
+              item={item}
+              onEdit={() => handleEdit(item)}
+              onDelete={() => handleDeleteItem(item.id)}
+              onToggleAvailability={(isAvailable) => handleToggleAvailability(item.id, isAvailable)}
+            />
+          ))}
+        </div>
+      )}
     </AppLayout>
   );
 }

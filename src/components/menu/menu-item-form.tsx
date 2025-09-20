@@ -18,12 +18,11 @@ const formSchema = z.object({
     z.number().positive('Price must be positive')
   ),
   category: z.string().min(1, 'Category is required'),
-  imageUrl: z.string().url('Must be a valid URL'),
-  isAvailable: z.boolean(),
+  image_url: z.string().url('Must be a valid URL'),
+  is_available: z.boolean(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
+type FormValues = Omit<MenuItem, 'id'>;
 
 interface MenuItemFormProps {
   item: MenuItem | null;
@@ -34,18 +33,35 @@ interface MenuItemFormProps {
 export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: item || {
+    defaultValues: item ? {
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        category: item.category,
+        image_url: item.imageUrl,
+        is_available: item.isAvailable,
+    } : {
       name: '',
       description: '',
       price: 0.00,
       category: '',
-      imageUrl: 'https://picsum.photos/seed/newitem/600/400',
-      isAvailable: true,
+      image_url: 'https://picsum.photos/seed/newitem/600/400',
+      is_available: true,
     },
   });
 
   const onSubmit = (data: FormValues) => {
-    onSave({ ...item, ...data, id: item?.id || String(Date.now()) });
+    const finalItem: MenuItem = {
+        id: item?.id || '',
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        category: data.category,
+        imageUrl: data.image_url,
+        isAvailable: data.is_available
+    }
+
+    onSave(finalItem);
   };
 
   return (
@@ -81,22 +97,22 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
         </div>
         <div className="grid gap-2">
           <Label htmlFor="imageUrl">Image URL</Label>
-          <Input id="imageUrl" {...register('imageUrl')} />
-          {errors.imageUrl && <p className="text-sm text-destructive">{errors.imageUrl.message}</p>}
+          <Input id="imageUrl" {...register('image_url')} />
+          {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
         </div>
         <div className="flex items-center space-x-2">
           <Controller
-            name="isAvailable"
+            name="is_available"
             control={control}
             render={({ field }) => (
                 <Switch
-                    id="isAvailable"
+                    id="is_available"
                     checked={field.value}
                     onCheckedChange={field.onChange}
                 />
             )}
           />
-          <Label htmlFor="isAvailable">Available</Label>
+          <Label htmlFor="is_available">Available</Label>
         </div>
       </div>
       <DialogFooter>

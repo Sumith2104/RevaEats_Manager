@@ -1,4 +1,6 @@
-export type OrderStatus = 'New' | 'Preparing' | 'Ready for Pickup' | 'Completed' | 'Cancelled';
+import { Database } from './supabase/database.types';
+
+export type OrderStatus = Database['public']['Enums']['order_status'];
 
 export interface Order {
   id: string;
@@ -14,15 +16,7 @@ export interface Order {
   orderTime: Date;
 }
 
-export interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  imageUrl: string;
-  isAvailable: boolean;
-}
+export type MenuItem = Database['public']['Tables']['menu_items']['Row'];
 
 export interface SalesData {
   date: string;
