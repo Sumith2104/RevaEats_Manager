@@ -22,11 +22,11 @@ const formSchema = z.object({
   is_available: z.boolean(),
 });
 
-type FormValues = Omit<MenuItem, 'id'>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface MenuItemFormProps {
   item: MenuItem | null;
-  onSave: (data: MenuItem) => void;
+  onSave: (data: any) => void;
   onCancel: () => void;
 }
 
@@ -38,8 +38,8 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
         description: item.description,
         price: item.price,
         category: item.category,
-        image_url: item.imageUrl,
-        is_available: item.isAvailable,
+        image_url: item.image_url,
+        is_available: item.is_available,
     } : {
       name: '',
       description: '',
@@ -51,16 +51,10 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
   });
 
   const onSubmit = (data: FormValues) => {
-    const finalItem: MenuItem = {
-        id: item?.id || '',
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        category: data.category,
-        imageUrl: data.image_url,
-        isAvailable: data.is_available
+    const finalItem = {
+        ...item,
+        ...data
     }
-
     onSave(finalItem);
   };
 

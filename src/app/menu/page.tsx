@@ -18,17 +18,12 @@ export default function MenuPage() {
 
   useEffect(() => {
     const fetchMenuItems = async () => {
-      // This is a placeholder for fetching menu items from Supabase.
-      // You will need to implement your data fetching logic.
+      setLoading(true);
       const { data, error } = await supabase.from('menu_items').select('*').order('name');
       if (error) {
         console.error('Error fetching menu items:', error);
       } else if (data) {
-        const items = data.map((item: any) => ({
-            ...item,
-            imageUrl: item.image_url
-        }));
-        setMenuItems(items);
+        setMenuItems(data);
       }
       setLoading(false);
     };
@@ -52,7 +47,7 @@ export default function MenuPage() {
   }, []);
 
   const handleSaveItem = async (item: MenuItem) => {
-    const { id, name, description, price, category, imageUrl: image_url, isAvailable: is_available } = item;
+    const { id, name, description, price, category, image_url, is_available } = item;
     const itemData = { name, description, price, category, image_url, is_available };
 
     if (editingItem) {

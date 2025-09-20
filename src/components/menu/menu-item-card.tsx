@@ -37,7 +37,7 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }: M
     <Card className="overflow-hidden flex flex-col">
       <CardHeader className="p-0 relative">
         <Image
-          src={item.imageUrl}
+          src={item.image_url}
           alt={item.name}
           width={600}
           height={400}
@@ -79,8 +79,8 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }: M
                 </AlertDialogContent>
             </AlertDialog>
         </div>
-        <Badge className="absolute top-2 left-2" variant={item.isAvailable ? "default" : "secondary"}>
-          {item.isAvailable ? 'Available' : 'Unavailable'}
+        <Badge className="absolute top-2 left-2" variant={item.is_available ? "default" : "secondary"}>
+          {item.is_available ? 'Available' : 'Unavailable'}
         </Badge>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
@@ -94,7 +94,7 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleAvailability }: M
         <div className="flex items-center space-x-2">
             <Switch
                 id={`available-${item.id}`}
-                checked={item.isAvailable}
+                checked={item.is_available}
                 onCheckedChange={onToggleAvailability}
                 aria-label='Toggle availability'
             />
