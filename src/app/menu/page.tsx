@@ -119,13 +119,13 @@ export default function MenuPage() {
         </Dialog>
       </div>
       {loading ? (
-        <div className="grid gap-4 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(8)].map((_, i) => (
             <Skeleton key={i} className="h-96 w-full" />
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
           {menuItems.map(item => (
             <MenuItemCard
               key={item.id}
