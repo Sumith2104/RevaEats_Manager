@@ -23,6 +23,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -36,9 +37,35 @@ const navItems = [
 
 export function AppLayout({ children }: AppLayoutProps) {
     const pathname = usePathname();
-    const [orderCount, setOrderCount] = useState(3);
+    const [orderCount, setOrderCount] = useState(0);
     const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    
+    useEffect(() => {
+      setMounted(true);
+      const fetchOrderCount = async () => {
+        const { count } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .not('status', 'eq', 'Completed');
+        setOrderCount(count ?? 0);
+      }
+      fetchOrderCount();
+
+      const channel = supabase
+        .channel('realtime orders count')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'orders' },
+          (payload) => {
+            fetchOrderCount();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }, []);
 
 
     return (
@@ -66,7 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 >
                                     <Icon className="h-4 w-4" />
                                     {label}
-                                    {label === "Orders" && mounted && (
+                                    {label === "Orders" && mounted && orderCount > 0 && (
                                         <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
                                             {orderCount}
                                         </Badge>
