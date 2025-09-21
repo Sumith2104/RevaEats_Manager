@@ -18,14 +18,14 @@ async function getDashboardStats() {
     const { data: totalRevenueData, error: totalRevenueError } = await supabase
         .from('orders')
         .select('total')
-        .eq('status', 'Completed');
+        .not('status', 'eq', 'Cancelled');
 
     if (totalRevenueError) console.error('Error fetching total revenue:', JSON.stringify(totalRevenueError, null, 2));
 
     const { data: lastMonthRevenueData, error: lastMonthRevenueError } = await supabase
         .from('orders')
         .select('total')
-        .eq('status', 'Completed')
+        .not('status', 'eq', 'Cancelled')
         .gte('order_time', lastMonth.toISOString());
 
     if (lastMonthRevenueError) console.error('Error fetching last month revenue:', JSON.stringify(lastMonthRevenueError, null, 2));
