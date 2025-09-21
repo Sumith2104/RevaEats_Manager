@@ -63,11 +63,6 @@ export default function MenuPage() {
     setFormOpen(false);
   };
 
-  const handleDeleteItem = async (itemId: string) => {
-    const { error } = await supabase.from('menu_items').delete().eq('id', itemId);
-    if (error) console.error("Error deleting item:", JSON.stringify(error, null, 2));
-  };
-
   const handleToggleAvailability = async (itemId: string, isAvailable: boolean) => {
     const { error } = await supabase.from('menu_items').update({ is_available: isAvailable }).eq('id', itemId);
     if (error) {
@@ -130,7 +125,6 @@ export default function MenuPage() {
               key={item.id}
               item={item}
               onEdit={() => handleEdit(item)}
-              onDelete={() => handleDeleteItem(item.id)}
               onToggleAvailability={(isAvailable) => handleToggleAvailability(item.id, isAvailable)}
             />
           ))}
