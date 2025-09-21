@@ -14,6 +14,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   orderTime: Date;
+  order_otp: string;
 }
 
 export type MenuItem = Database['public']['Tables']['menu_items']['Row'];

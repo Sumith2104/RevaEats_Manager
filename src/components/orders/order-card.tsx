@@ -34,7 +34,7 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="font-headline text-lg">Order #{order.id.split('-')[1]}</CardTitle>
+              <CardTitle className="font-headline text-lg">Order #{order.order_otp}</CardTitle>
               <CardDescription>{order.name}</CardDescription>
             </div>
             <Badge variant="outline" className="flex items-center gap-1.5 pl-2">

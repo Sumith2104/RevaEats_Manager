@@ -88,6 +88,7 @@ export type Database = {
           status: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time: string
           ordered_by_phone: string
+          order_otp: string
         }
         Insert: {
           id?: string
@@ -95,6 +96,7 @@ export type Database = {
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string
           ordered_by_phone: string
+          order_otp: string
         }
         Update: {
           id?: string
@@ -102,6 +104,7 @@ export type Database = {
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string
           ordered_by_phone?: string
+          order_otp?: string
         }
         Relationships: [
           {

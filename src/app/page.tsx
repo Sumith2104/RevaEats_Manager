@@ -27,6 +27,7 @@ export default function OrdersPage() {
           total,
           status,
           order_time,
+          order_otp,
           users ( name ),
           order_items (
             quantity,
@@ -49,6 +50,7 @@ export default function OrdersPage() {
           total: order.total,
           status: order.status,
           orderTime: new Date(order.order_time),
+          order_otp: order.order_otp,
           items: order.order_items.map((item: any) => ({
             id: item.menu_items.id,
             name: item.menu_items.name,
@@ -82,7 +84,7 @@ export default function OrdersPage() {
         if (newStatus === 'Completed') {
             toast({
               title: "Order Completed!",
-              description: `Order #${orderId.split('-')[1]} has been marked as completed.`,
+              description: `Order #${orders.find(o => o.id === orderId)?.order_otp} has been marked as completed.`,
             });
             // Remove the order from the local state
             setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
