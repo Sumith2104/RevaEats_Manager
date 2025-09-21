@@ -9,12 +9,15 @@ import { supabase } from '@/lib/supabase/client';
 import type { MenuItem } from '@/lib/types';
 import { PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MenuPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isFormOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
 
   const fetchMenuItems = async () => {
     setLoading(true);
@@ -52,11 +55,21 @@ export default function MenuPage() {
     if (id) {
       // Update
       const { error } = await supabase.from('menu_items').update(itemData).eq('id', id);
-      if (error) console.error("Error updating item:", JSON.stringify(error, null, 2));
+      if (error) {
+        console.error("Error updating item:", JSON.stringify(error, null, 2));
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to update item.' });
+      } else {
+        toast({ title: 'Success', description: 'Menu item updated.' });
+      }
     } else {
       // Create
       const { error } = await supabase.from('menu_items').insert(itemData);
-      if (error) console.error("Error creating item:", JSON.stringify(error, null, 2));
+      if (error) {
+        console.error("Error creating item:", JSON.stringify(error, null, 2));
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to create item.' });
+      } else {
+        toast({ title: 'Success', description: 'New menu item added.' });
+      }
     }
 
     setEditingItem(null);
@@ -90,7 +103,12 @@ export default function MenuPage() {
     <AppLayout>
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl font-headline">Menu Management</h1>
-        <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
+        <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+          setFormOpen(isOpen);
+          if (!isOpen) {
+            setEditingItem(null);
+          }
+        }}>
           <DialogTrigger asChild>
             <Button onClick={handleAddNew}>
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -107,19 +125,22 @@ export default function MenuPage() {
             <MenuItemForm
               item={editingItem}
               onSave={handleSaveItem}
-              onCancel={() => setFormOpen(false)}
+              onCancel={() => {
+                setFormOpen(false);
+                setEditingItem(null);
+              }}
             />
           </DialogContent>
         </Dialog>
       </div>
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
           {[...Array(8)].map((_, i) => (
             <Skeleton key={i} className="h-96 w-full" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
           {menuItems.map(item => (
             <MenuItemCard
               key={item.id}

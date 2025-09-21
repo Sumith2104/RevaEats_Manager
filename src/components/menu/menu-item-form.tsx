@@ -9,7 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { DialogFooter } from '@/components/ui/dialog';
 import type { MenuItem } from '@/lib/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -19,8 +22,9 @@ const formSchema = z.object({
     z.number().positive('Price must be positive')
   ),
   category: z.string().min(1, 'Category is required'),
-  image_url: z.string().url('Must be a valid URL'),
+  image_url: z.string().url('Must be a valid URL').optional(),
   is_available: z.boolean(),
+  image_file: z.instanceof(File).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,21 +36,42 @@ interface MenuItemFormProps {
 }
 
 export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
-  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<FormValues>({
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(item?.image_url || null);
+
+  const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: item || {
+    defaultValues: item ? { ...item, image_file: undefined } : {
       name: '',
       description: '',
       price: 0.00,
       category: '',
       image_url: 'https://picsum.photos/seed/newitem/600/400',
       is_available: true,
+      image_file: undefined,
     },
   });
 
+  const imageFile = watch('image_file');
+
+  useEffect(() => {
+    if (imageFile && imageFile.length > 0) {
+      const file = imageFile[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewImage(item?.image_url || null);
+    }
+  }, [imageFile, item]);
+
+
   useEffect(() => {
     if (item) {
-      reset(item);
+      reset({...item, image_file: undefined});
+      setPreviewImage(item.image_url);
     } else {
       reset({
         name: '',
@@ -55,17 +80,50 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
         category: '',
         image_url: 'https://picsum.photos/seed/newitem/600/400',
         is_available: true,
+        image_file: undefined,
       });
+      setPreviewImage('https://picsum.photos/seed/newitem/600/400');
     }
   }, [item, reset]);
 
 
-  const onSubmit = (data: FormValues) => {
-    const finalItem = {
-        ...(item || {}), // Keeps the original item properties like 'id'
-        ...data
+  const onSubmit = async (data: FormValues) => {
+    setIsUploading(true);
+    let imageUrl = item?.image_url || data.image_url;
+
+    const file = data.image_file?.[0];
+
+    if (file) {
+      const fileName = `${Date.now()}-${file.name}`;
+      const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('menu-images')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        setIsUploading(false);
+        return;
+      }
+      
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('menu-images')
+        .getPublicUrl(fileName);
+
+      imageUrl = publicUrlData.publicUrl;
     }
+
+    const finalItem = {
+      ...(item || {}),
+      ...data,
+      image_url: imageUrl,
+    };
+    
+    delete finalItem.image_file;
+
     onSave(finalItem);
+    setIsUploading(false);
   };
 
   return (
@@ -94,9 +152,14 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
             </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="imageUrl">Image URL</Label>
-          <Input id="imageUrl" {...register('image_url')} />
-          {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+            <Label htmlFor="image_file">Menu Image</Label>
+            {previewImage && (
+                <div className="mt-2">
+                    <Image src={previewImage} alt="Image preview" width={200} height={150} className="rounded-md object-cover"/>
+                </div>
+            )}
+            <Input id="image_file" type="file" accept="image/*" {...register('image_file')} />
+            {errors.image_file && <p className="text-sm text-destructive">{errors.image_file.message}</p>}
         </div>
         <div className="flex items-center space-x-2">
           <Controller
@@ -114,8 +177,11 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" type="button" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Save Changes</Button>
+        <Button variant="outline" type="button" onClick={onCancel} disabled={isUploading}>Cancel</Button>
+        <Button type="submit" disabled={isUploading}>
+            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isUploading ? 'Saving...' : 'Save Changes'}
+        </Button>
       </DialogFooter>
     </form>
   );
