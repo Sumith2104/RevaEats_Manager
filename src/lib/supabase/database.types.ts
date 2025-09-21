@@ -84,24 +84,46 @@ export type Database = {
       orders: {
         Row: {
           id: string
-          name: string
           total: number
           status: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time: string
+          ordered_by_phone: string
         }
         Insert: {
           id?: string
-          name: string
           total: number
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string
+          ordered_by_phone: string
         }
         Update: {
           id?: string
-          name?: string
           total?: number
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string
+          ordered_by_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_ordered_by_phone_fkey"
+            columns: ["ordered_by_phone"]
+            referencedRelation: "users"
+            referencedColumns: ["phone"]
+          }
+        ]
+      }
+      users: {
+        Row: {
+          phone: string
+          name: string
+        }
+        Insert: {
+          phone: string
+          name: string
+        }
+        Update: {
+          phone?: string
+          name?: string
         }
         Relationships: []
       }

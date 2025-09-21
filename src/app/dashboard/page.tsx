@@ -75,12 +75,17 @@ async function getDashboardStats() {
     
     const { data: recentCompletedOrders, error: recentOrdersError } = await supabase
         .from('orders')
-        .select('id, name, total, order_time')
+        .select('id, total, order_time, users ( name )')
         .eq('status', 'Completed')
         .order('order_time', { ascending: false })
         .limit(5);
 
     if (recentOrdersError) console.error('Error fetching recent orders:', JSON.stringify(recentOrdersError, null, 2));
+
+    const formattedRecentOrders = recentCompletedOrders?.map(order => ({
+        ...order,
+        name: order.users?.name ?? 'Unknown Customer',
+    })) ?? [];
 
 
     return {
@@ -89,7 +94,7 @@ async function getDashboardStats() {
         todaysOrdersCount,
         orderChange,
         popularItemName,
-        recentCompletedOrders: recentCompletedOrders ?? []
+        recentCompletedOrders: formattedRecentOrders
     };
 }
 

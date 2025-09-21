@@ -24,11 +24,11 @@ export default function OrdersPage() {
         .from('orders')
         .select(`
           id,
-          name,
           total,
           status,
           order_time,
-          order_items!inner (
+          users ( name ),
+          order_items (
             quantity,
             menu_items (
               id,
@@ -45,7 +45,7 @@ export default function OrdersPage() {
       } else if (data) {
         const fetchedOrders: Order[] = data.map((order: any) => ({
           id: order.id,
-          name: order.name,
+          name: order.users.name,
           total: order.total,
           status: order.status,
           orderTime: new Date(order.order_time),
