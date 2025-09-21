@@ -75,7 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                         <Link href="/" className="flex items-center gap-2 font-semibold">
                             <Utensils className="h-6 w-6 text-primary" />
-                            <span className="font-headline">Campus Kitchen</span>
+                            <span className="font-headline">Reva Kitchen</span>
                         </Link>
                         <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
                             <Bell className="h-4 w-4" />
@@ -127,7 +127,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     className="flex items-center gap-2 text-lg font-semibold mb-4"
                                 >
                                     <Utensils className="h-6 w-6 text-primary" />
-                                    <span>Campus Kitchen</span>
+                                    <span>Reva Kitchen</span>
                                 </Link>
                                 {navItems.map(({ href, icon: Icon, label }) => (
                                     <Link

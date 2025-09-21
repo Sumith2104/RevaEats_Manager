@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Campus Kitchen Commander',
-  description: 'The command center for your campus kitchen.',
+  title: 'Reva Kitchen Commander',
+  description: 'The command center for your Reva kitchen.',
 };
 
 export default function RootLayout({

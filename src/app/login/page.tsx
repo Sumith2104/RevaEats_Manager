@@ -14,7 +14,7 @@ export default function LoginPage() {
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <UtensilsCrossed className="h-12 w-12 mx-auto text-primary" />
-            <h1 className="text-3xl font-bold font-headline mt-2">Campus Kitchen Commander</h1>
+            <h1 className="text-3xl font-bold font-headline mt-2">Reva Kitchen Commander</h1>
             <p className="text-balance text-muted-foreground">
               Enter your credentials to access the dashboard
             </p>
