@@ -30,7 +30,7 @@ const remotePatterns = [
     pathname: '/**',
   },
   {
-    protocol: 'https_storage',
+    protocol: 'https',
     hostname: 'picsum.photos',
     port: '',
     pathname: '/**',
