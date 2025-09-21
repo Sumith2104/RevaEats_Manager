@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { DialogFooter } from '@/components/ui/dialog';
 import type { MenuItem } from '@/lib/types';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -31,16 +32,9 @@ interface MenuItemFormProps {
 }
 
 export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: item ? {
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        category: item.category,
-        image_url: item.image_url,
-        is_available: item.is_available,
-    } : {
+    defaultValues: item || {
       name: '',
       description: '',
       price: 0.00,
@@ -50,9 +44,25 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (item) {
+      reset(item);
+    } else {
+      reset({
+        name: '',
+        description: '',
+        price: 0.00,
+        category: '',
+        image_url: 'https://picsum.photos/seed/newitem/600/400',
+        is_available: true,
+      });
+    }
+  }, [item, reset]);
+
+
   const onSubmit = (data: FormValues) => {
     const finalItem = {
-        ...item,
+        ...(item || {}), // Keeps the original item properties like 'id'
         ...data
     }
     onSave(finalItem);

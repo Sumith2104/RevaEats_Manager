@@ -46,11 +46,10 @@ export default function MenuPage() {
     };
   }, []);
 
-  const handleSaveItem = async (item: MenuItem) => {
-    const { id, name, description, price, category, image_url, is_available } = item;
-    const itemData = { name, description, price, category, image_url, is_available };
+  const handleSaveItem = async (item: Omit<MenuItem, 'id'> & { id?: string }) => {
+    const { id, ...itemData } = item;
 
-    if (editingItem) {
+    if (id) {
       // Update
       const { error } = await supabase.from('menu_items').update(itemData).eq('id', id);
       if (error) console.error("Error updating item:", JSON.stringify(error, null, 2));
