@@ -30,7 +30,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface MenuItemFormProps {
   item: MenuItem | null;
-  onSave: (data: Omit<MenuItem, 'id'> & { id?: string }) => void;
+  onSave: (data: Omit<MenuItem, 'id' | 'image_url'> & { id?: string, image_url?: string }) => void;
   onCancel: () => void;
 }
 
@@ -38,7 +38,7 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(item?.image_url || null);
 
-  const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<FormValues>({
+  const { register, handleSubmit, control, formState: { errors }, reset, watch } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: item ? { ...item } : {
       name: '',
@@ -112,14 +112,15 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
       imageUrl = publicUrlData.publicUrl;
     }
 
+    const { image_file, ...restOfData } = data;
+
     const finalItem = {
-      ...data,
-      id: item?.id, // Pass the original item id
-      image_url: imageUrl || 'https://picsum.photos/seed/placeholder/600/400', // Fallback image
+      ...restOfData,
+      id: item?.id,
+      image_url: imageUrl || 'https://picsum.photos/seed/placeholder/600/400',
     };
     
-    // The type assertion is important here
-    onSave(finalItem as Omit<MenuItem, 'id'> & { id?: string });
+    onSave(finalItem);
     setIsUploading(false);
   };
 
