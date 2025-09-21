@@ -75,7 +75,7 @@ async function getDashboardStats() {
     
     const { data: recentCompletedOrders, error: recentOrdersError } = await supabase
         .from('orders')
-        .select('id, customer_name, total, order_time')
+        .select('id, name, total, order_time')
         .eq('status', 'Completed')
         .order('order_time', { ascending: false })
         .limit(5);
@@ -170,7 +170,7 @@ export default async function DashboardPage() {
                                         <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                                     </div>
                                     <div className="flex-grow">
-                                        <p className="font-medium">{order.customer_name}'s order completed</p>
+                                        <p className="font-medium">{order.name}'s order completed</p>
                                         <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(order.order_time), { addSuffix: true })}</p>
                                     </div>
                                     <Badge variant="secondary">₹{order.total.toFixed(2)}</Badge>

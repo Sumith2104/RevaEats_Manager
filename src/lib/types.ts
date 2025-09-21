@@ -4,7 +4,7 @@ export type OrderStatus = Database['public']['Enums']['order_status'];
 
 export interface Order {
   id: string;
-  customerName: string;
+  name: string;
   items: {
     id: string;
     name: string;

@@ -84,21 +84,21 @@ export type Database = {
       orders: {
         Row: {
           id: string
-          customer_name: string
+          name: string
           total: number
           status: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time: string
         }
         Insert: {
           id?: string
-          customer_name: string
+          name: string
           total: number
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string
         }
         Update: {
           id?: string
-          customer_name?: string
+          name?: string
           total?: number
           status?: "New" | "Preparing" | "Ready for Pickup" | "Completed" | "Cancelled"
           order_time?: string

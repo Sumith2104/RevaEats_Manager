@@ -24,7 +24,7 @@ export default function OrdersPage() {
         .from('orders')
         .select(`
           id,
-          customer_name,
+          name,
           total,
           status,
           order_time,
@@ -45,7 +45,7 @@ export default function OrdersPage() {
       } else if (data) {
         const fetchedOrders: Order[] = data.map((order: any) => ({
           id: order.id,
-          customerName: order.customer_name,
+          name: order.name,
           total: order.total,
           status: order.status,
           orderTime: new Date(order.order_time),
