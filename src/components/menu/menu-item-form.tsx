@@ -22,16 +22,15 @@ const formSchema = z.object({
     z.number().positive('Price must be positive')
   ),
   category: z.string().min(1, 'Category is required'),
-  image_url: z.string().url('Must be a valid URL').optional(),
   is_available: z.boolean(),
-  image_file: z.instanceof(File).optional(),
+  image_file: z.any().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 interface MenuItemFormProps {
   item: MenuItem | null;
-  onSave: (data: any) => void;
+  onSave: (data: Omit<MenuItem, 'id'> & { id?: string }) => void;
   onCancel: () => void;
 }
 
@@ -41,14 +40,12 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
 
   const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: item ? { ...item, image_file: undefined } : {
+    defaultValues: item ? { ...item } : {
       name: '',
       description: '',
       price: 0.00,
       category: '',
-      image_url: 'https://picsum.photos/seed/newitem/600/400',
       is_available: true,
-      image_file: undefined,
     },
   });
 
@@ -57,20 +54,22 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
   useEffect(() => {
     if (imageFile && imageFile.length > 0) {
       const file = imageFile[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (file instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     } else {
-      setPreviewImage(item?.image_url || null);
+      setPreviewImage(item?.image_url || 'https://picsum.photos/seed/newitem/600/400');
     }
   }, [imageFile, item]);
 
 
   useEffect(() => {
     if (item) {
-      reset({...item, image_file: undefined});
+      reset(item);
       setPreviewImage(item.image_url);
     } else {
       reset({
@@ -78,7 +77,6 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
         description: '',
         price: 0.00,
         category: '',
-        image_url: 'https://picsum.photos/seed/newitem/600/400',
         is_available: true,
         image_file: undefined,
       });
@@ -89,11 +87,11 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     setIsUploading(true);
-    let imageUrl = item?.image_url || data.image_url;
+    let imageUrl = item?.image_url;
 
     const file = data.image_file?.[0];
 
-    if (file) {
+    if (file && file instanceof File) {
       const fileName = `${Date.now()}-${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase
         .storage
@@ -115,14 +113,13 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
     }
 
     const finalItem = {
-      ...(item || {}),
       ...data,
-      image_url: imageUrl,
+      id: item?.id, // Pass the original item id
+      image_url: imageUrl || 'https://picsum.photos/seed/placeholder/600/400', // Fallback image
     };
     
-    delete finalItem.image_file;
-
-    onSave(finalItem);
+    // The type assertion is important here
+    onSave(finalItem as Omit<MenuItem, 'id'> & { id?: string });
     setIsUploading(false);
   };
 
@@ -159,7 +156,6 @@ export function MenuItemForm({ item, onSave, onCancel }: MenuItemFormProps) {
                 </div>
             )}
             <Input id="image_file" type="file" accept="image/*" {...register('image_file')} />
-            {errors.image_file && <p className="text-sm text-destructive">{errors.image_file.message}</p>}
         </div>
         <div className="flex items-center space-x-2">
           <Controller
